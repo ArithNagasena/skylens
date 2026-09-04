@@ -1,0 +1,48 @@
+/**
+ * A working list of the towns clients most often book us for — not an
+ * exhaustive gazetteer of Sri Lanka, which would run into the thousands.
+ * "Other" always sits at the end of the dropdown and reveals a free-text
+ * field, so a visitor whose town isn't listed is never blocked.
+ */
+export const commonTowns = [
+  "Colombo",
+  "Dehiwala-Mount Lavinia",
+  "Moratuwa",
+  "Negombo",
+  "Ja-Ela",
+  "Wattala",
+  "Panadura",
+  "Kalutara",
+  "Beruwala",
+  "Bentota",
+  "Kandy",
+  "Nuwara Eliya",
+  "Ella",
+  "Bandarawela",
+  "Haputale",
+  "Kurunegala",
+  "Chilaw",
+  "Puttalam",
+  "Anuradhapura",
+  "Polonnaruwa",
+  "Sigiriya",
+  "Dambulla",
+  "Galle",
+  "Hikkaduwa",
+  "Unawatuna",
+  "Weligama",
+  "Mirissa",
+  "Matara",
+  "Tangalle",
+  "Hambantota",
+  "Jaffna",
+  "Trincomalee",
+  "Batticaloa",
+  "Ampara",
+  "Vavuniya",
+  "Ratnapura",
+  "Kegalle",
+  "Badulla",
+  "Gampaha",
+  "Kotte",
+] as const;

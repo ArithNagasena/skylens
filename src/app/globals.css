@@ -1,26 +1,424 @@
 @import "tailwindcss";
 
+@theme {
+  /* ---- Surfaces ------------------------------------------------------
+     A tinted light stack, not a white one. Three levels do the work:
+       raised   — cards, the nav pill: the only near-white surface
+       void     — the page ground itself, softly cool-tinted
+       obsidian — the alternating section band, clearly below the ground
+     The tint is pulled toward `signal` (the logo's azure), which is what
+     makes the light theme read as part of the same palette as the anchors. */
+  --color-raised: #fdfeff;        /*  1% below white */
+  --color-void: #f5f8fc;          /*  6% below white — the page */
+  --color-obsidian: #e7eef7;      /* 16% below white — the band */
+  --color-slate-deep: #dbe6f2;
+  --color-surface: #cddeee;
+  --color-surface-2: #b6cbe1;
+
+
+  /* ---- Ink -----------------------------------------------------------
+     The logo's charcoal family (#1d2129), not a blue-black. Measured on the
+     page ground: 16.9:1, 8.9:1 and 5.2:1 — all clear AA, so even `ink-dim`
+     is safe for body-size text. */
+  --color-ink: #111722;
+  --color-ink-muted: #394656;
+  --color-ink-dim: #5b6878;
+
+  /* ---- Brand ---------------------------------------------------------
+     Sampled straight off public/brand/client-logo.jpg. The mark uses exactly
+     two colours — azure #0d4d8a (the arc and "SKY") and charcoal #1d2129
+     (the airframe and "LENS") — so the whole site runs on one hue at three
+     weights rather than the teal/amber/violet mix that was here before.
+
+     signal / beacon / horizon are the *ink* weights: readable as text on the
+     page, and readable with white text on top of them. The -soft entries are
+     tint fills for icon chips; the -vivid trio is decoration only (glows,
+     contour art, dots) and must never carry text. */
+  --color-signal: #0d4d8a;        /* the logo azure — 8.0:1 on the page */
+  --color-signal-deep: #093761;
+  --color-signal-soft: #e4eefa;   /* tint FILL — signal text on it is 7.4:1 */
+  --color-signal-vivid: #2b82d8;
+
+  /* ---- Brand fill -----------------------------------------------------
+     THE one blue for solid CTAs, site-wide. Crucially it is NOT re-pointed
+     inside `.on-deep`, unlike `signal` — that remapping is what made the same
+     "Request a quote" button render deep navy on light pages and pale azure
+     on dark ones, and made the secondary button navy-on-navy.
+
+     It sits a step brighter than `signal` because no single dark blue can
+     separate from BOTH a near-white page and a near-black navy. Measured:
+     white label on it 5.1:1; against the page ground 4.7:1; against `deep`
+     3.05:1 — so it stays legible and visible on every surface the site has. */
+  --color-brand: #1a6fc4;
+
+  --color-beacon: #0a6fb8;        /* brighter azure — 4.9:1 on the page */
+  --color-beacon-soft: #e2f0fb;
+  --color-beacon-vivid: #3a9de0;
+
+  --color-horizon: #1a3c68;       /* deep navy — 10.3:1 on the page */
+  --color-horizon-soft: #e6ebf4;
+  --color-horizon-vivid: #3f6ea8;
+
+  /* ---- Deep anchors ---------------------------------------------------
+     A page that is white everywhere reads as washed out, so the nav, the
+     closing CTA and the footer sit on these instead. The hue matches `signal`,
+     which is what keeps the light and dark halves feeling related.
+
+     These must stay in `@theme`, not `:root`: Tailwind v4 derives utilities
+     from theme tokens only, so declaring them in `:root` gives you a working
+     `var(--color-deep)` but no `bg-deep` / `from-deep` class. */
+  --color-deep: #0b2540;
+  --color-deep-2: #123a63;
+
+  /* ---- Type scale ----------------------------------------------------
+     One scale, five steps. Before this the site used fourteen different
+     arbitrary pixel sizes for body-level text (9.5px through 17px) alongside
+     Tailwind's own, so nothing lined up between two components written on
+     different days.
+
+       micro  mono uppercase labels, eyebrows, HUD readouts
+       meta   captions, bylines, secondary detail
+       body   every paragraph on the site
+       lead   section ledes and hero supporting copy
+       title  card and panel headings
+
+     Everything above `title` is a heading and keeps its own responsive
+     display sizes. Sizes were raised as they were unified — body copy was
+     sitting at 14–15px and is now 16px. */
+  --text-micro: 0.6875rem;          /* 11px */
+  --text-micro--line-height: 1.45;
+  --text-meta: 0.84375rem;          /* 13.5px */
+  --text-meta--line-height: 1.55;
+  --text-body: 1rem;                /* 16px */
+  --text-body--line-height: 1.65;
+  --text-lead: 1.125rem;            /* 18px */
+  --text-lead--line-height: 1.6;
+  --text-title: 1.25rem;            /* 20px */
+  --text-title--line-height: 1.3;
+
+  /* ---- Type --------------------------------------------------------- */
+  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-hud), ui-monospace, SFMono-Regular, monospace;
+
+  /* ---- Motion ------------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  /* ---- Layout ------------------------------------------------------- */
+  --spacing-gutter: 1.25rem;
+}
+
+/* Elevation. On white, depth comes from tight, low-alpha shadows — the
+   dark-theme habit of huge near-black blooms just reads as smudging. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --shadow-e1: 0 1px 2px rgba(17, 23, 34, 0.05), 0 1px 1px rgba(17, 23, 34, 0.03);
+  --shadow-e2: 0 4px 12px -4px rgba(17, 23, 34, 0.10), 0 2px 4px -2px rgba(17, 23, 34, 0.05);
+  --shadow-e3: 0 18px 36px -18px rgba(17, 23, 34, 0.20), 0 6px 14px -8px rgba(17, 23, 34, 0.08);
+  --shadow-e4: 0 32px 64px -28px rgba(17, 23, 34, 0.26), 0 10px 22px -12px rgba(17, 23, 34, 0.10);
+  --border-hairline: color-mix(in oklab, var(--color-ink) 11%, transparent);
+
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    border-color: var(--border-hairline);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-signal) 22%, transparent);
+    color: var(--color-ink);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    /* Archivo is already a tight grotesk with a large x-height; the -0.03em
+       that Sora needed closes its counters up at display sizes. */
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  /* Focus ring — visible, on-brand, keyboard only */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-void); }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-ink) 22%, transparent);
+    border-radius: 99px;
+    border: 3px solid var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--color-signal) 70%, transparent);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Fine 1px grid — the "survey plot" backdrop */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--color-ink) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--color-ink) 7%, transparent) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  .bg-grid-fine {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--color-ink) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--color-ink) 5%, transparent) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+  }
+  .mask-fade-edges {
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+  .mask-radial {
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 40%, transparent 100%);
+  }
+
+  /* Ink to logo azure. Both ends are dark enough to read as a headline. */
+  .text-gradient {
+    background: linear-gradient(150deg, var(--color-ink) 15%, var(--color-signal) 115%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass {
+    background: color-mix(in oklab, var(--color-raised) 88%, transparent);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+  }
+
+  /* ---- Dark scope ----------------------------------------------------
+     Re-points the theme variables inside a subtree. Because every Tailwind
+     colour utility compiles to `var(--color-*)`, wrapping a section in this
+     flips `text-ink`, `text-ink-muted`, `text-signal`, `hairline` and friends
+     to their on-dark equivalents without touching the markup inside. */
+  .on-deep {
+    --color-void: var(--color-deep);
+    --color-raised: #123a63;
+    --color-obsidian: #0e2f52;
+    --color-slate-deep: #143f6b;
+    --color-surface: #1a4c7f;
+    --color-ink: #eef4fa;         /* 14.1:1 on deep */
+    --color-ink-muted: #b9cee4;   /*  9.6:1 */
+    --color-ink-dim: #8ba4c0;     /*  6.1:1 */
+    --color-signal: #68b4f0;      /*  6.9:1, and 6.9:1 under deep text */
+    --color-signal-deep: #9acdf7;
+    --color-signal-soft: #143f6b;
+    --border-hairline: rgba(255, 255, 255, 0.14);
+    background-color: var(--color-deep);
+    background-image: linear-gradient(to bottom, var(--color-deep-2), var(--color-deep) 70%);
+    color: var(--color-ink);
+  }
+
+  .hairline {
+    box-shadow: inset 0 0 0 1px var(--border-hairline);
+  }
+
+  .glow-signal {
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--color-signal) 30%, transparent),
+      0 10px 30px -12px color-mix(in oklab, var(--color-signal) 35%, transparent);
+  }
+
+  /* ---- Cards --------------------------------------------------------
+     Replaces the dark-theme from-white/[0.05] fills, which became invisible
+     once the page behind them turned white. Definition on a light ground has
+     to come from a border plus a shadow, not from a lighter fill. */
+  .card {
+    background-color: var(--color-raised);
+    background-image: linear-gradient(to bottom, var(--color-raised), color-mix(in oklab, var(--color-obsidian) 30%, var(--color-raised)));
+    /* e2 rather than e1: on a white section the border alone leaves a card
+       looking like a drawn rectangle rather than a raised surface. */
+    box-shadow: inset 0 0 0 1px var(--border-hairline), var(--shadow-e2);
+  }
+
+  .card-muted {
+    background-color: color-mix(in oklab, var(--color-obsidian) 85%, var(--color-raised));
+    box-shadow: inset 0 0 0 1px var(--border-hairline);
+  }
+
+  .card-interactive {
+    transition:
+      transform 0.5s var(--ease-out-expo),
+      box-shadow 0.5s var(--ease-out-expo),
+      background-color 0.5s var(--ease-out-expo);
+  }
+  .card-interactive:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--color-signal) 38%, transparent),
+      var(--shadow-e3);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-interactive:hover { transform: none; }
+  }
+
+  .elev-1 { box-shadow: inset 0 0 0 1px var(--border-hairline), var(--shadow-e1); }
+  .elev-2 { box-shadow: inset 0 0 0 1px var(--border-hairline), var(--shadow-e2); }
+  .elev-3 { box-shadow: inset 0 0 0 1px var(--border-hairline), var(--shadow-e3); }
+  .elev-4 { box-shadow: inset 0 0 0 1px var(--border-hairline), var(--shadow-e4); }
+
+  .container-page {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 84rem;
+    padding-inline: var(--spacing-gutter);
+  }
+  @media (min-width: 768px) {
+    .container-page { padding-inline: 2.5rem; }
+  }
+}
+
+/* ---- Keyframes ------------------------------------------------------ */
+@keyframes sweep {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(210%); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -18px, 0); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.85); opacity: 0.6; }
+  70%  { transform: scale(1.6);  opacity: 0; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes dash-flow {
+  to { stroke-dashoffset: -1000; }
+}
+/* Hero panel. `hero-dissolve` crossfades the upper still over the lower one so
+   the frame reads as footage rather than a photograph; `scan-y` is the sensor
+   refresh line. Both are decorative and stop under prefers-reduced-motion. */
+@keyframes hero-dissolve {
+  0%, 40%   { opacity: 1; }
+  50%, 90%  { opacity: 0; }
+  100%      { opacity: 1; }
+}
+/* A very slow scale on a hero still, so a photograph reads as footage. Paired
+   with `hero-dissolve` it gives motion without a video file. */
+@keyframes hero-dissolve-b {
+  0%, 25%   { opacity: 0; }
+  40%, 60%  { opacity: 1; }
+  75%, 100% { opacity: 0; }
+}
+@keyframes slow-push {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.12); }
+}
+@keyframes scan-y {
+  0%   { top: 0%;   opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes blink {
+  0%, 45%  { opacity: 1; }
+  50%, 95% { opacity: 0.2; }
+}
+
+.animate-sweep      { animation: sweep 5s var(--ease-in-out-quint) infinite; }
+.animate-drift      { animation: drift 9s ease-in-out infinite; }
+.animate-pulse-ring { animation: pulse-ring 2.6s ease-out infinite; }
+.animate-marquee    { animation: marquee-x 42s linear infinite; }
+.animate-dash-flow  { animation: dash-flow 12s linear infinite; }
+.animate-blink      { animation: blink 1.9s steps(1) infinite; }
+.animate-hero-dissolve { animation: hero-dissolve 16s var(--ease-in-out-quint) infinite; }
+.animate-hero-dissolve-b { animation: hero-dissolve-b 16s var(--ease-in-out-quint) infinite; }
+.animate-scan-y        { animation: scan-y 7s linear infinite; }
+.animate-slow-push     { animation: slow-push 26s ease-out infinite alternate; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Print ---------------------------------------------------------
+   Printing is handled by the JS isolated-window approach in
+   quotation-document.tsx — the component opens a dedicated window
+   containing only the quotation HTML + the site's own stylesheets,
+   then calls print() on it. This guarantees a single A4 page and
+   avoids the multi-blank-page problem caused by visibility:hidden
+   leaving all other page elements in the layout flow.
+   This minimal block just hides the print button if window.print()
+   is ever called directly on the main page. */
+@media print {
+  [data-print-hide] {
+    display: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------- print ---
+   Quotations and bills are printed straight from their page in the admin
+   panel rather than being re-rendered into a separate print window. That only
+   works if the panel's own chrome steps out of the way: the sidebar and the
+   action buttons carry `print:hidden`, and the rules below drop the page
+   padding and the card's shadow so the document starts at the paper's margin
+   instead of inside a floating white box.
+
+   A4 with a 14 mm margin matches what the studio's documents have always been
+   printed on. */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  /* Colour is meaningful on these documents — the balance due, the estimate
+     disclaimer — so ask the browser to keep it rather than helpfully
+     converting everything to grey. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* A line item split across a page break is unreadable on a printed bill. */
+  tr,
+  li,
+  p {
+    break-inside: avoid;
+  }
 }
